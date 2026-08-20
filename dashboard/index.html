@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fin-Guard Analytics – Credit Risk Command Center</title>
+  <meta name="description" content="Real-time loan portfolio monitoring dashboard with AI-powered anomaly detection for Fin-Guard Analytics." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════ TOP NAV ══════════════════════════════════ -->
+<nav class="navbar" id="navbar">
+  <div class="nav-brand">
+    <div class="brand-icon">🛡️</div>
+    <div>
+      <span class="brand-name">Fin-Guard Analytics</span>
+      <span class="brand-tagline">Credit Risk Command Center</span>
+    </div>
+  </div>
+
+  <div class="nav-status">
+    <div class="live-indicator">
+      <span class="pulse-dot"></span>
+      <span>AI Monitor Active</span>
+    </div>
+    <div class="nav-time" id="nav-time">--:-- UTC</div>
+  </div>
+
+  <div class="nav-actions">
+    <button class="btn-ghost" id="refresh-btn" onclick="refreshData()">⟳ Refresh</button>
+    <select class="filter-select" id="timeframe-select" onchange="updateTimeframe(this.value)">
+      <option value="30">Last 30 Days</option>
+      <option value="60">Last 60 Days</option>
+      <option value="90" selected>Last 90 Days</option>
+      <option value="180">Last 180 Days</option>
+      <option value="365">Last 365 Days</option>
+    </select>
+    <select class="filter-select" id="region-filter" onchange="updateRegion(this.value)">
+      <option value="all">All Regions</option>
+      <option value="usa">USA</option>
+      <option value="uk">UK</option>
+      <option value="india">India</option>
+      <option value="canada">Canada</option>
+    </select>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════ ALERT BANNER ══════════════════════════════ -->
+<div class="alert-banner" id="alert-banner" style="display:none">
+  <span class="alert-icon">🚨</span>
+  <span id="alert-text">KPI threshold breach detected. AI investigation in progress…</span>
+  <button onclick="dismissAlert()" class="alert-dismiss">✕</button>
+</div>
+
+<!-- ═════════════════════════════ HERO SECTION ═══════════════════════════════ -->
+<main class="main-content">
+
+  <!-- KPI Hero Cards -->
+  <section class="kpi-grid" aria-label="Key Performance Indicators">
+    <div class="kpi-card" id="kpi-par30">
+      <div class="kpi-icon">📊</div>
+      <div class="kpi-info">
+        <span class="kpi-label">PAR-30 Rate</span>
+        <span class="kpi-value" id="val-par30">3.82%</span>
+        <span class="kpi-delta negative" id="delta-par30">▲ 0.4% vs last month</span>
+      </div>
+      <div class="kpi-threshold">
+        <span class="threshold-label">Threshold: 5.0%</span>
+        <div class="threshold-bar">
+          <div class="threshold-fill ok" id="fill-par30" style="width:76%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card breach-warning" id="kpi-default">
+      <div class="kpi-icon">⚠️</div>
+      <div class="kpi-info">
+        <span class="kpi-label">Default Rate (30d)</span>
+        <span class="kpi-value breach" id="val-default">3.71%</span>
+        <span class="kpi-delta negative" id="delta-default">▲ 0.71% above threshold</span>
+      </div>
+      <div class="kpi-threshold">
+        <span class="threshold-label">Threshold: 3.0%</span>
+        <div class="threshold-bar">
+          <div class="threshold-fill critical" id="fill-default" style="width:100%"></div>
+        </div>
+      </div>
+      <div class="breach-badge">BREACH</div>
+    </div>
+
+    <div class="kpi-card" id="kpi-txn">
+      <div class="kpi-icon">💳</div>
+      <div class="kpi-info">
+        <span class="kpi-label">Anomaly Count (24h)</span>
+        <span class="kpi-value" id="val-anomaly">38</span>
+        <span class="kpi-delta positive" id="delta-anomaly">▼ 12 vs yesterday</span>
+      </div>
+      <div class="kpi-threshold">
+        <span class="threshold-label">Threshold: 50 flags</span>
+        <div class="threshold-bar">
+          <div class="threshold-fill ok" id="fill-anomaly" style="width:76%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card" id="kpi-npl">
+      <div class="kpi-icon">🏦</div>
+      <div class="kpi-info">
+        <span class="kpi-label">NPL Ratio</span>
+        <span class="kpi-value" id="val-npl">6.24%</span>
+        <span class="kpi-delta negative" id="delta-npl">▲ 0.3% MoM</span>
+      </div>
+      <div class="kpi-threshold">
+        <span class="threshold-label">Threshold: 8.0%</span>
+        <div class="threshold-bar">
+          <div class="threshold-fill warning" id="fill-npl" style="width:78%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card" id="kpi-portfolio">
+      <div class="kpi-icon">💼</div>
+      <div class="kpi-info">
+        <span class="kpi-label">Active Portfolio</span>
+        <span class="kpi-value" id="val-portfolio">$284.7M</span>
+        <span class="kpi-delta positive" id="delta-portfolio">▲ 2.1% MoM growth</span>
+      </div>
+    </div>
+
+    <div class="kpi-card" id="kpi-loans">
+      <div class="kpi-icon">📋</div>
+      <div class="kpi-info">
+        <span class="kpi-label">Active Loans</span>
+        <span class="kpi-value" id="val-loans">8,421</span>
+        <span class="kpi-delta positive" id="delta-loans">▲ 156 new this month</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ CHARTS ROW 1 ═════════════════════════════════ -->
+  <section class="charts-row">
+    <!-- Default Rate Trend -->
+    <div class="chart-card wide">
+      <div class="chart-header">
+        <div>
+          <h2 class="chart-title">Default Rate Trend</h2>
+          <p class="chart-subtitle">Monthly 30-day default rates with AI-detected anomalies</p>
+        </div>
+        <div class="chart-actions">
+          <button class="chart-btn active" onclick="setChartView('default','monthly')">Monthly</button>
+          <button class="chart-btn" onclick="setChartView('default','quarterly')">Quarterly</button>
+        </div>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="defaultRateChart" aria-label="Default Rate Trend Chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Risk Tier Composition -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <h2 class="chart-title">Risk Tier Mix</h2>
+          <p class="chart-subtitle">Portfolio by customer risk segment</p>
+        </div>
+      </div>
+      <div class="chart-wrapper donut-wrapper">
+        <canvas id="riskTierChart" aria-label="Risk Tier Donut Chart"></canvas>
+      </div>
+      <div class="legend-grid" id="risk-legend"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ CHARTS ROW 2 ═════════════════════════════════ -->
+  <section class="charts-row">
+    <!-- PAR Bucket Bar Chart -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <h2 class="chart-title">PAR Bucket Analysis</h2>
+          <p class="chart-subtitle">Loan portfolio by days-past-due bucket</p>
+        </div>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="parBucketChart" aria-label="PAR Bucket Bar Chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Transaction Volume by Type -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <h2 class="chart-title">Transaction Volume</h2>
+          <p class="chart-subtitle">Daily transaction breakdown by type</p>
+        </div>
+        <div class="chart-actions">
+          <button class="chart-btn active" onclick="setChartView('txn','count')">Count</button>
+          <button class="chart-btn" onclick="setChartView('txn','volume')">Volume</button>
+        </div>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="txnVolumeChart" aria-label="Transaction Volume Chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Anomaly Trend -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <h2 class="chart-title">Anomaly Detection</h2>
+          <p class="chart-subtitle">Daily flagged transactions (Z-score &gt; 3σ)</p>
+        </div>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="anomalyChart" aria-label="Anomaly Trend Chart"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ AI AGENT PANEL ═══════════════════════════════ -->
+  <section class="agent-panel">
+    <div class="agent-header">
+      <div class="agent-status-indicator">
+        <div class="agent-avatar">🤖</div>
+        <div>
+          <h2 class="agent-title">Agentic AI Monitor</h2>
+          <span class="agent-status-text">
+            <span class="pulse-dot green"></span>
+            Actively monitoring · Last poll: <span id="last-poll-time">2 min ago</span>
+          </span>
+        </div>
+      </div>
+      <div class="agent-controls">
+        <button class="btn-agent" id="trigger-investigate" onclick="triggerInvestigation()">
+          🔍 Trigger Investigation
+        </button>
+        <button class="btn-agent secondary" onclick="viewAgentLog()">
+          📋 View Agent Log
+        </button>
+      </div>
+    </div>
+
+    <div class="agent-log" id="agent-log">
+      <div class="log-entry success">
+        <span class="log-ts">16:32 UTC</span>
+        <span class="log-badge ok">✓ OK</span>
+        <span class="log-msg">KPI poll #47 completed. PAR-30: 3.82% | Default Rate: 3.71% | Anomalies: 38</span>
+      </div>
+      <div class="log-entry critical">
+        <span class="log-ts">16:27 UTC</span>
+        <span class="log-badge breach">🚨 BREACH</span>
+        <span class="log-msg">Default Rate crossed 3.0% threshold (value: 3.71%). Initiating root-cause investigation…</span>
+      </div>
+      <div class="log-entry info">
+        <span class="log-ts">16:27 UTC</span>
+        <span class="log-badge investigating">🔍 INVESTIGATE</span>
+        <span class="log-msg">Executing fn_investigate_default_spike() for the last 30 days…</span>
+      </div>
+      <div class="log-entry info">
+        <span class="log-ts">16:28 UTC</span>
+        <span class="log-badge llm">🧠 GPT-4</span>
+        <span class="log-msg">Root-cause identified: High-risk SME loans in Texas (+32% default). Slack alert dispatched.</span>
+      </div>
+      <div class="log-entry success">
+        <span class="log-ts">16:22 UTC</span>
+        <span class="log-badge ok">✓ OK</span>
+        <span class="log-msg">KPI poll #46 completed. All metrics within normal range.</span>
+      </div>
+      <div class="log-entry success">
+        <span class="log-ts">16:17 UTC</span>
+        <span class="log-badge ok">✓ OK</span>
+        <span class="log-msg">Materialized view reporting.mv_daily_kpi_cache refreshed successfully.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ HEATMAP / REGION TABLE ═══════════════════════ -->
+  <section class="charts-row">
+    <div class="chart-card wide">
+      <div class="chart-header">
+        <div>
+          <h2 class="chart-title">Regional Performance Heatmap</h2>
+          <p class="chart-subtitle">Default rate intensity by region (darker = higher risk)</p>
+        </div>
+        <div class="chart-actions">
+          <button class="chart-btn active" onclick="setHeatmap('default')">Default Rate</button>
+          <button class="chart-btn" onclick="setHeatmap('par30')">PAR-30</button>
+          <button class="chart-btn" onclick="setHeatmap('anomaly')">Anomalies</button>
+        </div>
+      </div>
+      <div class="region-table-wrapper">
+        <table class="region-table" id="region-table">
+          <thead>
+            <tr>
+              <th>Region</th>
+              <th>State</th>
+              <th>Active Loans</th>
+              <th>Portfolio ($M)</th>
+              <th>Default Rate</th>
+              <th>PAR-30</th>
+              <th>Anomalies</th>
+              <th>Risk Score</th>
+            </tr>
+          </thead>
+          <tbody id="region-tbody">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Loan Status Waterfall -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <h2 class="chart-title">Loan Status Flow</h2>
+          <p class="chart-subtitle">Portfolio composition by status</p>
+        </div>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="loanStatusChart" aria-label="Loan Status Chart"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ BOTTOM INVESTIGATION MODAL ═══════════════════ -->
+  <div class="modal-overlay" id="investigation-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>🔍 AI Root-Cause Investigation</h3>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <div class="investigating-spinner">
+          <div class="spinner"></div>
+          <p>AI agent is executing SQL queries and analyzing the data…</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ══════════════════════════════ FOOTER ═════════════════════════════════ -->
+<footer class="footer">
+  <span>🛡️ Fin-Guard Analytics &middot; Agentic AI Monitor</span>
+  <span>Data last refreshed: <span id="last-refresh">Just now</span></span>
+  <span>PostgreSQL · LangChain · GPT-4 · Power BI</span>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
