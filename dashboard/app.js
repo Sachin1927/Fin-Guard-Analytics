@@ -8,23 +8,25 @@
 'use strict';
 
 // ── Chart.js Global Defaults ────────────────────────────────────────────────
-Chart.defaults.color = '#A0AEC0';
-Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+Chart.defaults.color = '#64748B';
+Chart.defaults.borderColor = '#E2E8F0';
 Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
 Chart.defaults.font.size = 12;
 Chart.defaults.plugins.legend.display = false;
 
 // ── Color Palette ───────────────────────────────────────────────────────────
 const COLORS = {
-    blue: '#4299E1',
-    purple: '#9F7AEA',
-    teal: '#38B2AC',
-    green: '#48BB78',
-    yellow: '#F6AD55',
-    red: '#FC8181',
-    pink: '#F687B3',
-    indigo: '#7F9CF5',
-    danger: '#E53E3E',
+    blue: '#2563EB',
+    purple: '#7C3AED',
+    teal: '#0D9488',
+    green: '#059669',
+    yellow: '#D97706',
+    red: '#DC2626',
+    pink: '#DB2777',
+    indigo: '#4F46E5',
+    danger: '#B91C1C',
+    lightBlue: '#3B82F6',
+    slate: '#475569',
 };
 
 const GRAD = (ctx, colors) => {
@@ -64,6 +66,18 @@ function seedRandom(arr) {
     return arr.map(v => jitter(v, v * 0.15));
 }
 
+// ── Shared tooltip style ─────────────────────────────────────────────────────
+const tooltipStyle = {
+    backgroundColor: '#FFFFFF',
+    titleColor: '#0F172A',
+    bodyColor: '#475569',
+    borderColor: '#DAE3ED',
+    borderWidth: 1,
+    padding: 12,
+    cornerRadius: 8,
+    boxPadding: 4,
+};
+
 // ══════════════════════════════════════════════════════════════════════════════
 // 1. DEFAULT RATE TREND CHART
 // ══════════════════════════════════════════════════════════════════════════════
@@ -93,8 +107,8 @@ const defaultRateChart = new Chart(
                     borderColor: COLORS.red,
                     backgroundColor: (ctx) => {
                         const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 260);
-                        g.addColorStop(0, 'rgba(229,62,62,0.25)');
-                        g.addColorStop(1, 'rgba(229,62,62,0)');
+                        g.addColorStop(0, 'rgba(220,38,38,0.12)');
+                        g.addColorStop(1, 'rgba(220,38,38,0)');
                         return g;
                     },
                     borderWidth: 2.5,
@@ -103,13 +117,13 @@ const defaultRateChart = new Chart(
                     pointRadius: 4,
                     pointHoverRadius: 7,
                     pointBackgroundColor: COLORS.red,
-                    pointBorderColor: '#1A2235',
+                    pointBorderColor: '#FFFFFF',
                     pointBorderWidth: 2,
                 },
                 {
                     label: 'Threshold',
                     data: new Array(18).fill(3.0),
-                    borderColor: 'rgba(246,173,85,0.6)',
+                    borderColor: 'rgba(217,119,6,0.5)',
                     borderWidth: 1.5,
                     borderDash: [6, 4],
                     pointRadius: 0,
@@ -124,10 +138,7 @@ const defaultRateChart = new Chart(
             interaction: { mode: 'index', intersect: false },
             plugins: {
                 tooltip: {
-                    backgroundColor: '#1A2235',
-                    borderColor: 'rgba(66,153,225,0.3)',
-                    borderWidth: 1,
-                    padding: 12,
+                    ...tooltipStyle,
                     callbacks: {
                         label: ctx => `  ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}%`
                     }
@@ -137,16 +148,16 @@ const defaultRateChart = new Chart(
                         breachLine: {
                             type: 'line',
                             yMin: 3.0, yMax: 3.0,
-                            borderColor: 'rgba(246,173,85,0.8)',
+                            borderColor: 'rgba(217,119,6,0.6)',
                             borderWidth: 1,
                             borderDash: [5, 5],
                             label: {
                                 display: true,
                                 content: 'Threshold 3.0%',
-                                color: '#F6AD55',
+                                color: '#92400E',
                                 font: { size: 10, weight: '600' },
                                 position: 'end',
-                                backgroundColor: 'rgba(26,34,53,0.9)',
+                                backgroundColor: 'rgba(255,251,235,0.9)',
                                 padding: { x: 6, y: 3 },
                                 yAdjust: -12,
                             }
@@ -156,11 +167,11 @@ const defaultRateChart = new Chart(
             },
             scales: {
                 x: {
-                    grid: { color: 'rgba(255,255,255,0.04)' },
+                    grid: { color: '#F1F5F9' },
                     ticks: { maxRotation: 45 }
                 },
                 y: {
-                    grid: { color: 'rgba(255,255,255,0.04)' },
+                    grid: { color: '#F1F5F9' },
                     ticks: { callback: v => v.toFixed(1) + '%' },
                     min: 0,
                 }
@@ -184,7 +195,12 @@ new Chart(document.getElementById('riskTierChart'), {
         labels: riskTierConfig.labels,
         datasets: [{
             data: riskTierConfig.data,
-            backgroundColor: riskTierConfig.colors.map(c => c + 'CC'),
+            backgroundColor: [
+                'rgba(5,150,105,0.75)',
+                'rgba(37,99,235,0.75)',
+                'rgba(217,119,6,0.75)',
+                'rgba(220,38,38,0.75)',
+            ],
             borderColor: riskTierConfig.colors,
             borderWidth: 2,
             hoverBorderWidth: 3,
@@ -198,10 +214,7 @@ new Chart(document.getElementById('riskTierChart'), {
         plugins: {
             legend: { display: false },
             tooltip: {
-                backgroundColor: '#1A2235',
-                borderColor: 'rgba(66,153,225,0.3)',
-                borderWidth: 1,
-                padding: 12,
+                ...tooltipStyle,
                 callbacks: { label: ctx => `  ${ctx.label}: ${ctx.parsed}%` }
             }
         }
@@ -212,7 +225,7 @@ new Chart(document.getElementById('riskTierChart'), {
 const legendEl = document.getElementById('risk-legend');
 riskTierConfig.labels.forEach((label, i) => {
     legendEl.innerHTML += `
-    <div style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:#A0AEC0">
+    <div style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:#475569">
       <div style="width:10px;height:10px;border-radius:2px;background:${riskTierConfig.colors[i]};flex-shrink:0"></div>
       <span>${label} (${riskTierConfig.data[i]}%)</span>
     </div>`;
@@ -229,11 +242,11 @@ new Chart(document.getElementById('parBucketChart'), {
             label: '% of Portfolio',
             data: [71.4, 10.8, 6.2, 4.1, 7.5],
             backgroundColor: [
-                'rgba(72,187,120,0.7)',
-                'rgba(66,153,225,0.7)',
-                'rgba(246,173,85,0.7)',
-                'rgba(252,129,129,0.7)',
-                'rgba(229,62,62,0.85)',
+                'rgba(5,150,105,0.65)',
+                'rgba(37,99,235,0.65)',
+                'rgba(217,119,6,0.65)',
+                'rgba(220,38,38,0.55)',
+                'rgba(185,28,28,0.7)',
             ],
             borderColor: [COLORS.green, COLORS.blue, COLORS.yellow, COLORS.red, COLORS.danger],
             borderWidth: 1.5,
@@ -246,17 +259,14 @@ new Chart(document.getElementById('parBucketChart'), {
         maintainAspectRatio: false,
         plugins: {
             tooltip: {
-                backgroundColor: '#1A2235',
-                borderColor: 'rgba(66,153,225,0.3)',
-                borderWidth: 1,
-                padding: 10,
+                ...tooltipStyle,
                 callbacks: { label: ctx => `  Share: ${ctx.parsed.y.toFixed(1)}%` }
             }
         },
         scales: {
             x: { grid: { display: false } },
             y: {
-                grid: { color: 'rgba(255,255,255,0.04)' },
+                grid: { color: '#F1F5F9' },
                 ticks: { callback: v => v + '%', stepSize: 20 },
                 max: 100,
             }
@@ -279,7 +289,7 @@ new Chart(document.getElementById('txnVolumeChart'), {
         datasets: txnTypes.map((type, i) => ({
             label: type,
             data: txnLabels.map(() => Math.round(txnBases[i] + Math.random() * 60 - 30)),
-            backgroundColor: txnColors[i] + '99',
+            backgroundColor: txnColors[i] + '66',
             borderColor: txnColors[i],
             borderWidth: 0.5,
             borderRadius: i === 0 ? { topLeft: 4, topRight: 4 } : 0,
@@ -295,16 +305,11 @@ new Chart(document.getElementById('txnVolumeChart'), {
                 labels: {
                     boxWidth: 10,
                     font: { size: 10 },
-                    color: '#718096',
+                    color: '#64748B',
                     padding: 12,
                 }
             },
-            tooltip: {
-                backgroundColor: '#1A2235',
-                borderColor: 'rgba(66,153,225,0.3)',
-                borderWidth: 1,
-                padding: 10,
-            }
+            tooltip: tooltipStyle,
         },
         scales: {
             x: {
@@ -317,7 +322,7 @@ new Chart(document.getElementById('txnVolumeChart'), {
             },
             y: {
                 stacked: true,
-                grid: { color: 'rgba(255,255,255,0.04)' },
+                grid: { color: '#F1F5F9' },
             }
         }
     }
@@ -340,8 +345,8 @@ new Chart(document.getElementById('anomalyChart'), {
                 borderColor: COLORS.purple,
                 backgroundColor: (ctx) => {
                     const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 240);
-                    g.addColorStop(0, 'rgba(159,122,234,0.3)');
-                    g.addColorStop(1, 'rgba(159,122,234,0)');
+                    g.addColorStop(0, 'rgba(124,58,237,0.15)');
+                    g.addColorStop(1, 'rgba(124,58,237,0)');
                     return g;
                 },
                 borderWidth: 2,
@@ -353,7 +358,7 @@ new Chart(document.getElementById('anomalyChart'), {
             {
                 label: 'Threshold',
                 data: new Array(30).fill(50),
-                borderColor: 'rgba(246,173,85,0.5)',
+                borderColor: 'rgba(217,119,6,0.4)',
                 borderWidth: 1,
                 borderDash: [5, 4],
                 pointRadius: 0,
@@ -366,12 +371,7 @@ new Chart(document.getElementById('anomalyChart'), {
         maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false },
         plugins: {
-            tooltip: {
-                backgroundColor: '#1A2235',
-                borderColor: 'rgba(66,153,225,0.3)',
-                borderWidth: 1,
-                padding: 10,
-            }
+            tooltip: tooltipStyle,
         },
         scales: {
             x: {
@@ -382,7 +382,7 @@ new Chart(document.getElementById('anomalyChart'), {
                 }
             },
             y: {
-                grid: { color: 'rgba(255,255,255,0.04)' },
+                grid: { color: '#F1F5F9' },
                 min: 0,
             }
         }
@@ -400,10 +400,10 @@ new Chart(document.getElementById('loanStatusChart'), {
             label: 'Loans',
             data: [8421, 2156, 634, 789],
             backgroundColor: [
-                'rgba(72,187,120,0.7)',
-                'rgba(66,153,225,0.7)',
-                'rgba(246,173,85,0.7)',
-                'rgba(229,62,62,0.7)',
+                'rgba(5,150,105,0.65)',
+                'rgba(37,99,235,0.65)',
+                'rgba(217,119,6,0.65)',
+                'rgba(220,38,38,0.65)',
             ],
             borderColor: [COLORS.green, COLORS.blue, COLORS.yellow, COLORS.danger],
             borderWidth: 1.5,
@@ -416,16 +416,13 @@ new Chart(document.getElementById('loanStatusChart'), {
         maintainAspectRatio: false,
         plugins: {
             tooltip: {
-                backgroundColor: '#1A2235',
-                borderColor: 'rgba(66,153,225,0.3)',
-                borderWidth: 1,
-                padding: 10,
+                ...tooltipStyle,
                 callbacks: { label: ctx => `  Loans: ${ctx.parsed.x.toLocaleString()}` }
             }
         },
         scales: {
             x: {
-                grid: { color: 'rgba(255,255,255,0.04)' },
+                grid: { color: '#F1F5F9' },
                 ticks: { callback: v => (v / 1000).toFixed(0) + 'K' }
             },
             y: { grid: { display: false } }
@@ -451,11 +448,11 @@ function renderRegionTable(data) {
     const tbody = document.getElementById('region-tbody');
     tbody.innerHTML = data.map(r => {
         const scoreClass = r.score.toLowerCase();
-        const drColor = r.defaultRate > 5 ? '#FC8181' : r.defaultRate > 3 ? '#F6AD55' : '#68D391';
-        const par30Color = r.par30 > 7 ? '#FC8181' : r.par30 > 5 ? '#F6AD55' : '#68D391';
+        const drColor = r.defaultRate > 5 ? '#DC2626' : r.defaultRate > 3 ? '#D97706' : '#059669';
+        const par30Color = r.par30 > 7 ? '#DC2626' : r.par30 > 5 ? '#D97706' : '#059669';
         return `
       <tr>
-        <td><strong style="color:#90CDF4">${r.region}</strong></td>
+        <td><strong style="color:#1D4ED8">${r.region}</strong></td>
         <td>${r.state}</td>
         <td>${r.loans.toLocaleString()}</td>
         <td>$${r.portfolio.toFixed(1)}M</td>
@@ -497,7 +494,73 @@ function dismissAlert() {
 // Show on load for the breach demo
 setTimeout(() => {
     showAlert('⚠️ Default Rate breach detected (3.71% > 3.0%). AI investigation in progress. Slack alert dispatched to #fin-guard-alerts.');
+    // Also show toast on the AI bubble
+    showAIToast('Default Rate breach: 3.71% > 3.0% threshold');
 }, 800);
+
+// ══════════════════════════════════════════════════════════════════════════════
+// AI FLOATING BUBBLE – TOGGLE, TOAST, BADGE
+// ══════════════════════════════════════════════════════════════════════════════
+let aiPanelOpen = false;
+let aiBadgeCount = 0;
+
+function toggleAIPanel() {
+    const panel = document.getElementById('ai-panel');
+    aiPanelOpen = !aiPanelOpen;
+    if (aiPanelOpen) {
+        panel.classList.add('open');
+        // Clear badge when panel is opened
+        aiBadgeCount = 0;
+        updateBadge();
+        // Dismiss any toast
+        dismissToast();
+    } else {
+        panel.classList.remove('open');
+    }
+}
+
+function updateBadge() {
+    const badge = document.getElementById('ai-badge');
+    if (aiBadgeCount > 0) {
+        badge.textContent = aiBadgeCount > 9 ? '9+' : aiBadgeCount;
+        badge.style.display = 'flex';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+function showAIToast(message) {
+    const toast = document.getElementById('ai-toast');
+    document.getElementById('ai-toast-msg').textContent = message;
+    toast.style.display = 'flex';
+
+    // Increment badge if panel is closed
+    if (!aiPanelOpen) {
+        aiBadgeCount++;
+        updateBadge();
+    }
+
+    // Auto-dismiss after 8 seconds
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(dismissToast, 8000);
+}
+
+function dismissToast() {
+    document.getElementById('ai-toast').style.display = 'none';
+}
+
+// Clicking toast opens the AI panel
+document.getElementById('ai-toast')?.addEventListener('click', function(e) {
+    if (!e.target.classList.contains('ai-toast-close')) {
+        dismissToast();
+        if (!aiPanelOpen) toggleAIPanel();
+    }
+});
+
+function clearAgentLog() {
+    document.getElementById('agent-log').innerHTML = '';
+    addAgentLogEntry('info', '🗑️ CLEAR', 'Agent log cleared manually.');
+}
 
 // ══════════════════════════════════════════════════════════════════════════════
 // DATA REFRESH SIMULATION
@@ -536,16 +599,28 @@ function addAgentLogEntry(type, badge, message) {
 
     // Keep only last 20 entries
     while (log.children.length > 20) log.removeChild(log.lastChild);
+
+    // If it's a critical/breach entry, fire a toast notification
+    if (type === 'critical') {
+        showAIToast(message);
+    }
 }
 
-// Simulate live agent polling
+// Simulate live agent polling (every 15 seconds)
 setInterval(() => {
     const pollNum = Math.floor(Math.random() * 900) + 48;
     const par30 = (Math.random() * 2 + 2.8).toFixed(2);
     const defRate = (Math.random() * 1.5 + 2.8).toFixed(2);
     const anomalies = Math.floor(Math.random() * 40 + 15);
-    addAgentLogEntry('success', '✓ OK',
-        `KPI poll #${pollNum} completed. PAR-30: ${par30}% | Default Rate: ${defRate}% | Anomalies: ${anomalies}`);
+
+    // Check if any simulated value breaches threshold
+    if (parseFloat(defRate) > 3.0) {
+        addAgentLogEntry('critical', '🚨 BREACH',
+            `Default Rate ${defRate}% exceeds 3.0% threshold. Investigation recommended.`);
+    } else {
+        addAgentLogEntry('success', '✓ OK',
+            `KPI poll #${pollNum} completed. PAR-30: ${par30}% | Default Rate: ${defRate}% | Anomalies: ${anomalies}`);
+    }
 }, 15000);
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -572,7 +647,6 @@ function setChartView(chart, view) {
 }
 
 function setHeatmap(metric) {
-    // Future: sort table by selected metric
     const sorted = [...regionData].sort((a, b) => {
         if (metric === 'default') return b.defaultRate - a.defaultRate;
         if (metric === 'par30') return b.par30 - a.par30;
@@ -600,59 +674,62 @@ function updateRegion(region) {
 // INVESTIGATION MODAL
 // ══════════════════════════════════════════════════════════════════════════════
 function triggerInvestigation() {
+    // Close AI panel when opening investigation
+    if (aiPanelOpen) toggleAIPanel();
+
     document.getElementById('investigation-modal').classList.add('open');
     document.getElementById('modal-body').innerHTML = `
     <div class="investigating-spinner">
       <div class="spinner"></div>
-      <p>🤖 AI agent is executing <code style="color:#9F7AEA">fn_investigate_default_spike()</code>…</p>
+      <p>🤖 AI agent is executing <code style="color:#7C3AED;background:#F5F3FF;padding:2px 6px;border-radius:4px">fn_investigate_default_spike()</code>…</p>
     </div>`;
 
     setTimeout(() => {
         document.getElementById('modal-body').innerHTML = `
       <div class="fade-in">
-        <h4 style="color:#90CDF4;margin-bottom:1rem">🔍 Root-Cause Analysis: Default Rate Breach (3.71%)</h4>
+        <h4 style="color:#1D4ED8;margin-bottom:1rem">🔍 Root-Cause Analysis: Default Rate Breach (3.71%)</h4>
 
-        <p style="color:#A0AEC0;margin-bottom:1.5rem">
-          <strong style="color:#F7FAFC">AI Investigation completed</strong> at ${new Date().toUTCString()}
+        <p style="color:#475569;margin-bottom:1.5rem">
+          <strong style="color:#0F172A">AI Investigation completed</strong> at ${new Date().toUTCString()}
         </p>
 
-        <div style="background:rgba(229,62,62,0.08);border:1px solid rgba(229,62,62,0.2);border-radius:10px;padding:1rem;margin-bottom:1.5rem">
-          <strong style="color:#FC8181">⚡ Primary Root Cause</strong>
-          <p style="margin-top:0.5rem;color:#FEB2B2">
+        <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:1rem;margin-bottom:1.5rem">
+          <strong style="color:#B91C1C">⚡ Primary Root Cause</strong>
+          <p style="margin-top:0.5rem;color:#991B1B">
             High-risk SME loans in Texas have driven a <strong>+32% spike in defaults</strong> over the last 30 days.
             These loans were issued at above-average DTI ratios (> 0.6) to borrowers in the construction sector,
             which has seen significant macro-economic stress.
           </p>
         </div>
 
-        <strong style="color:#F7FAFC">📊 Top 3 Impacted Segments</strong>
+        <strong style="color:#0F172A">📊 Top 3 Impacted Segments</strong>
         <table style="width:100%;margin-top:0.75rem;border-collapse:collapse;font-size:0.82rem">
-          <tr style="background:rgba(255,255,255,0.04)">
-            <th style="text-align:left;padding:0.5rem;color:#718096">Segment</th>
-            <th style="padding:0.5rem;color:#718096;text-align:right">Default Rate</th>
-            <th style="padding:0.5rem;color:#718096;text-align:right">Portfolio $M</th>
+          <tr style="background:#F8FAFC">
+            <th style="text-align:left;padding:0.5rem;color:#64748B">Segment</th>
+            <th style="padding:0.5rem;color:#64748B;text-align:right">Default Rate</th>
+            <th style="padding:0.5rem;color:#64748B;text-align:right">Portfolio $M</th>
           </tr>
-          <tr><td style="padding:0.5rem;border-bottom:1px solid rgba(255,255,255,0.04)">SME / Texas (Critical)</td>
-              <td style="padding:0.5rem;text-align:right;color:#FC8181;font-weight:700;border-bottom:1px solid rgba(255,255,255,0.04)">9.4%</td>
-              <td style="padding:0.5rem;text-align:right;border-bottom:1px solid rgba(255,255,255,0.04)">$14.2M</td></tr>
-          <tr><td style="padding:0.5rem;border-bottom:1px solid rgba(255,255,255,0.04)">Personal Loan / Illinois (High)</td>
-              <td style="padding:0.5rem;text-align:right;color:#F6AD55;font-weight:700;border-bottom:1px solid rgba(255,255,255,0.04)">5.8%</td>
-              <td style="padding:0.5rem;text-align:right;border-bottom:1px solid rgba(255,255,255,0.04)">$8.7M</td></tr>
+          <tr><td style="padding:0.5rem;border-bottom:1px solid #F1F5F9">SME / Texas (Critical)</td>
+              <td style="padding:0.5rem;text-align:right;color:#DC2626;font-weight:700;border-bottom:1px solid #F1F5F9">9.4%</td>
+              <td style="padding:0.5rem;text-align:right;border-bottom:1px solid #F1F5F9">$14.2M</td></tr>
+          <tr><td style="padding:0.5rem;border-bottom:1px solid #F1F5F9">Personal Loan / Illinois (High)</td>
+              <td style="padding:0.5rem;text-align:right;color:#D97706;font-weight:700;border-bottom:1px solid #F1F5F9">5.8%</td>
+              <td style="padding:0.5rem;text-align:right;border-bottom:1px solid #F1F5F9">$8.7M</td></tr>
           <tr><td style="padding:0.5rem">Auto Loan / Arizona (High)</td>
-              <td style="padding:0.5rem;text-align:right;color:#F6AD55;font-weight:700">4.9%</td>
+              <td style="padding:0.5rem;text-align:right;color:#D97706;font-weight:700">4.9%</td>
               <td style="padding:0.5rem;text-align:right">$6.1M</td></tr>
         </table>
 
         <div style="margin-top:1.5rem">
-          <strong style="color:#F7FAFC">✅ Recommended Actions</strong>
-          <ol style="margin:0.75rem 0 0 1.2rem;color:#A0AEC0;line-height:1.8">
-            <li>Immediately <strong style="color:#68D391">suspend new SME loan disbursements</strong> to the construction sector in Texas pending credit review.</li>
-            <li>Initiate <strong style="color:#68D391">early intervention outreach</strong> for 89 loans in PAR-30 bucket with outstanding balance > $50K.</li>
-            <li>Escalate <strong style="color:#68D391">restructuring offers</strong> to 34 high-risk personal loans in Illinois with DTI > 0.55.</li>
+          <strong style="color:#0F172A">✅ Recommended Actions</strong>
+          <ol style="margin:0.75rem 0 0 1.2rem;color:#475569;line-height:1.8">
+            <li>Immediately <strong style="color:#059669">suspend new SME loan disbursements</strong> to the construction sector in Texas pending credit review.</li>
+            <li>Initiate <strong style="color:#059669">early intervention outreach</strong> for 89 loans in PAR-30 bucket with outstanding balance > $50K.</li>
+            <li>Escalate <strong style="color:#059669">restructuring offers</strong> to 34 high-risk personal loans in Illinois with DTI > 0.55.</li>
           </ol>
         </div>
 
-        <div style="margin-top:1.5rem;padding:0.75rem;background:rgba(159,122,234,0.1);border-radius:8px;font-size:0.8rem;color:#D6BCFA">
+        <div style="margin-top:1.5rem;padding:0.75rem;background:#F5F3FF;border:1px solid #DDD6FE;border-radius:8px;font-size:0.8rem;color:#6D28D9">
           🧠 Analysis generated by <strong>GPT-4o</strong> via LangChain agent framework.
           Slack alert dispatched to <strong>#fin-guard-alerts</strong>.
         </div>
@@ -665,18 +742,17 @@ function closeModal() {
     document.getElementById('investigation-modal').classList.remove('open');
 }
 
-function viewAgentLog() {
-    document.getElementById('agent-log').scrollIntoView({ behavior: 'smooth' });
-}
-
 // Click outside modal to close
 document.getElementById('investigation-modal').addEventListener('click', function (e) {
     if (e.target === this) closeModal();
 });
 
-// ── Keyboard shortcut: ESC to close modal ────────────────────────────────────
+// ── Keyboard shortcut: ESC to close modal or AI panel ────────────────────────
 document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeModal();
+    if (e.key === 'Escape') {
+        closeModal();
+        if (aiPanelOpen) toggleAIPanel();
+    }
 });
 
 // ── Last refresh counter ─────────────────────────────────────────────────────
@@ -688,4 +764,5 @@ setInterval(() => {
     else el.textContent = `${Math.floor(secondsSinceRefresh / 60)}m ago`;
 }, 1000);
 
-console.log('%c🛡️ Fin-Guard Analytics Dashboard loaded', 'color:#4299E1;font-weight:bold;font-size:14px');
+console.log('%c🛡️ Fin-Guard Analytics Dashboard loaded', 'color:#2563EB;font-weight:bold;font-size:14px');
+

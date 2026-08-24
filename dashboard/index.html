@@ -223,62 +223,6 @@
     </div>
   </section>
 
-  <!-- ═══════════════════════ AI AGENT PANEL ═══════════════════════════════ -->
-  <section class="agent-panel">
-    <div class="agent-header">
-      <div class="agent-status-indicator">
-        <div class="agent-avatar">🤖</div>
-        <div>
-          <h2 class="agent-title">Agentic AI Monitor</h2>
-          <span class="agent-status-text">
-            <span class="pulse-dot green"></span>
-            Actively monitoring · Last poll: <span id="last-poll-time">2 min ago</span>
-          </span>
-        </div>
-      </div>
-      <div class="agent-controls">
-        <button class="btn-agent" id="trigger-investigate" onclick="triggerInvestigation()">
-          🔍 Trigger Investigation
-        </button>
-        <button class="btn-agent secondary" onclick="viewAgentLog()">
-          📋 View Agent Log
-        </button>
-      </div>
-    </div>
-
-    <div class="agent-log" id="agent-log">
-      <div class="log-entry success">
-        <span class="log-ts">16:32 UTC</span>
-        <span class="log-badge ok">✓ OK</span>
-        <span class="log-msg">KPI poll #47 completed. PAR-30: 3.82% | Default Rate: 3.71% | Anomalies: 38</span>
-      </div>
-      <div class="log-entry critical">
-        <span class="log-ts">16:27 UTC</span>
-        <span class="log-badge breach">🚨 BREACH</span>
-        <span class="log-msg">Default Rate crossed 3.0% threshold (value: 3.71%). Initiating root-cause investigation…</span>
-      </div>
-      <div class="log-entry info">
-        <span class="log-ts">16:27 UTC</span>
-        <span class="log-badge investigating">🔍 INVESTIGATE</span>
-        <span class="log-msg">Executing fn_investigate_default_spike() for the last 30 days…</span>
-      </div>
-      <div class="log-entry info">
-        <span class="log-ts">16:28 UTC</span>
-        <span class="log-badge llm">🧠 GPT-4</span>
-        <span class="log-msg">Root-cause identified: High-risk SME loans in Texas (+32% default). Slack alert dispatched.</span>
-      </div>
-      <div class="log-entry success">
-        <span class="log-ts">16:22 UTC</span>
-        <span class="log-badge ok">✓ OK</span>
-        <span class="log-msg">KPI poll #46 completed. All metrics within normal range.</span>
-      </div>
-      <div class="log-entry success">
-        <span class="log-ts">16:17 UTC</span>
-        <span class="log-badge ok">✓ OK</span>
-        <span class="log-msg">Materialized view reporting.mv_daily_kpi_cache refreshed successfully.</span>
-      </div>
-    </div>
-  </section>
 
   <!-- ═══════════════════════ HEATMAP / REGION TABLE ═══════════════════════ -->
   <section class="charts-row">
@@ -329,7 +273,7 @@
     </div>
   </section>
 
-  <!-- ═══════════════════════ BOTTOM INVESTIGATION MODAL ═══════════════════ -->
+  <!-- ═══════════════════════ INVESTIGATION MODAL ═══════════════════════ -->
   <div class="modal-overlay" id="investigation-modal">
     <div class="modal">
       <div class="modal-header">
@@ -347,6 +291,70 @@
 
 </main>
 
+<!-- ═══════════════════════ FLOATING AI AGENT BUBBLE ═══════════════════════ -->
+<div class="ai-fab" id="ai-fab" onclick="toggleAIPanel()">
+  <span class="ai-fab-icon">🤖</span>
+  <span class="ai-fab-badge" id="ai-badge" style="display:none">0</span>
+</div>
+
+<!-- AI Toast Notification -->
+<div class="ai-toast" id="ai-toast" style="display:none">
+  <div class="ai-toast-icon">🚨</div>
+  <div class="ai-toast-content">
+    <div class="ai-toast-title">Risk Alert</div>
+    <div class="ai-toast-msg" id="ai-toast-msg">Breach detected</div>
+  </div>
+  <button class="ai-toast-close" onclick="dismissToast()">✕</button>
+</div>
+
+<!-- AI Slide-up Panel -->
+<div class="ai-panel" id="ai-panel">
+  <div class="ai-panel-header">
+    <div class="ai-panel-title-row">
+      <div class="agent-avatar">🤖</div>
+      <div>
+        <h3 class="ai-panel-title">Agentic AI Monitor</h3>
+        <span class="agent-status-text">
+          <span class="pulse-dot green"></span>
+          Actively monitoring · Last poll: <span id="last-poll-time">2 min ago</span>
+        </span>
+      </div>
+    </div>
+    <button class="ai-panel-close" onclick="toggleAIPanel()">✕</button>
+  </div>
+  <div class="ai-panel-actions">
+    <button class="btn-agent" onclick="triggerInvestigation()">🔍 Trigger Investigation</button>
+    <button class="btn-agent secondary" onclick="clearAgentLog()">🗑️ Clear Log</button>
+  </div>
+  <div class="agent-log" id="agent-log">
+    <div class="log-entry success">
+      <span class="log-ts">16:32 UTC</span>
+      <span class="log-badge ok">✓ OK</span>
+      <span class="log-msg">KPI poll #47 completed. PAR-30: 3.82% | Default Rate: 3.71% | Anomalies: 38</span>
+    </div>
+    <div class="log-entry critical">
+      <span class="log-ts">16:27 UTC</span>
+      <span class="log-badge breach">🚨 BREACH</span>
+      <span class="log-msg">Default Rate crossed 3.0% threshold (value: 3.71%). Initiating root-cause investigation…</span>
+    </div>
+    <div class="log-entry info">
+      <span class="log-ts">16:27 UTC</span>
+      <span class="log-badge investigating">🔍 INVESTIGATE</span>
+      <span class="log-msg">Executing fn_investigate_default_spike() for the last 30 days…</span>
+    </div>
+    <div class="log-entry info">
+      <span class="log-ts">16:28 UTC</span>
+      <span class="log-badge llm">🧠 GPT-4</span>
+      <span class="log-msg">Root-cause identified: High-risk SME loans in Texas (+32% default). Slack alert dispatched.</span>
+    </div>
+    <div class="log-entry success">
+      <span class="log-ts">16:22 UTC</span>
+      <span class="log-badge ok">✓ OK</span>
+      <span class="log-msg">KPI poll #46 completed. All metrics within normal range.</span>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════════════════════ FOOTER ═════════════════════════════════ -->
 <footer class="footer">
   <span>🛡️ Fin-Guard Analytics &middot; Agentic AI Monitor</span>
@@ -357,3 +365,4 @@
 <script src="app.js"></script>
 </body>
 </html>
+
