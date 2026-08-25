@@ -288,7 +288,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
-<p align="center">
-  <strong>Built with ❤️ for data-driven financial risk management</strong><br/>
-  <em>If this project helped you, give it a ⭐ on GitHub!</em>
-</p>
+
